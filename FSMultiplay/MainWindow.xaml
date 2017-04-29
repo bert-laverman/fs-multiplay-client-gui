@@ -26,7 +26,7 @@
                                     HorizontalAlignment="Right" Margin="16"
                                     IsChecked="{Binding ElementName=MenuToggleButton, Path=IsChecked, Mode=TwoWay}" />
                     <ListBox x:Name="DemoItemsListBox" Margin="0 16 0 16" SelectedIndex="0"                         
-                             ItemsSource="{Binding DemoItems}" PreviewMouseMove="menu_OnPreviewMouseLeftButtonUp">
+                             ItemsSource="{Binding DemoItems}">
                         <ListBox.ItemTemplate>
                             <DataTemplate DataType="domain:DemoItem">
                                 <TextBlock Text="{Binding Name}" Margin="32 0 32 0" />
@@ -45,7 +45,7 @@
                             <StackPanel>
                                 <Button Content="Hello World" Click="menu_HelloWorld"/>
                                 <Button Content="Nice Popup" Click="menu_NicePopup"/>
-                                <Button Content="Can't Touch This" IsEnabled="False" />
+                                <Button Content="Can't Touch This" Click="menu_CantTouchThis"  />
                                 <Separator/>
                                 <Button Content="Goodbye" Click="menu_Goodbye"/>
                             </StackPanel>
@@ -62,7 +62,95 @@
                                   HorizontalScrollBarVisibility="{Binding ElementName=DemoItemsListBox, Path=SelectedItem.HorizontalScrollBarVisibilityRequirement}"
                                   VerticalScrollBarVisibility="{Binding ElementName=DemoItemsListBox, Path=SelectedItem.VerticalScrollBarVisibilityRequirement}" 
                                   Padding="{Binding ElementName=DemoItemsListBox, Path=SelectedItem.MarginRequirement}">
-                        <ContentControl Content="{Binding ElementName=DemoItemsListBox, Path=SelectedItem.Content}" />
+                        <StackPanel Margin="5">
+                            <materialDesign:Card Grid.Row="1" Background="{DynamicResource MaterialDesignBackground}" Margin="1 1 0 0">
+                                <Expander>
+                                    <Expander.Header>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Orientation="Horizontal" Grid.Column="0">
+                                                <Image Name="imgNoSim" Source="Images/nofsx.png" Width="64" Height="64" />
+                                                <Image Name="imgFsx" Source="Images/fsx.png" Width="64" Height="64" Visibility="Collapsed" />
+                                                <Image Name="imgFsxSe" Source="Images/fsxse.png" Width="64" Height="64" Visibility="Collapsed" />
+                                                <Image Name="imgP3d" Source="Images/p3d.png" Width="64" Height="64" Visibility="Collapsed" />
+                                            </StackPanel>
+                                            <TextBlock Name="txtSimSummary" Grid.Column="1" VerticalAlignment="Center" FontSize="24">Simulator not running</TextBlock>
+                                        </Grid>
+                                    </Expander.Header>
+                                    <Expander.Content>
+                                        <materialDesign:Card Grid.Row="1" Background="{DynamicResource MaterialDesignBackground}" Margin="1 1 0 0">
+                                            <Grid Margin="5">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Orientation="Vertical" Grid.Column="0" Margin="5">
+                                                    <TextBlock FontSize="12" Foreground="Gray">Simulator:</TextBlock>
+                                                    <TextBlock Name="txtSimName" FontSize="16">Simulator not Connected</TextBlock>
+                                                </StackPanel>
+                                                <StackPanel Orientation="Vertical" Grid.Column="1" Margin="5">
+                                                    <TextBlock FontSize="12" Foreground="Gray">Version:</TextBlock>
+                                                    <TextBlock Name="txtSimVersion" FontSize="16">10.0.0</TextBlock>
+                                                    <TextBlock FontSize="12" Foreground="Gray">SimConnect version:</TextBlock>
+                                                    <TextBlock Name="txtSimConVersion" FontSize="16">10.0.0</TextBlock>
+                                                </StackPanel>
+                                                <StackPanel Orientation="Vertical" Grid.Column="2" Margin="5">
+                                                    <TextBlock FontSize="12" Foreground="Gray">Build:</TextBlock>
+                                                    <TextBlock Name="txtSimBuild" FontSize="16">12345</TextBlock>
+                                                    <TextBlock FontSize="12" Foreground="Gray">SimConnect build:</TextBlock>
+                                                    <TextBlock Name="txtSimConBuild" FontSize="16">12345</TextBlock>
+                                                </StackPanel>
+                                            </Grid>
+                                        </materialDesign:Card>
+                                    </Expander.Content>
+                                </Expander>
+                            </materialDesign:Card>
+                            <materialDesign:Card Grid.Row="1" Background="{DynamicResource MaterialDesignBackground}" Margin="1 1 0 0">
+                                <Expander>
+                                    <Expander.Header>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Name="txtCallsign" Grid.Column="0" VerticalAlignment="Center" FontSize="24" Foreground="Gray">(callsign)</TextBlock>
+                                            <TextBlock Name="txtTitle" Grid.Column="1" VerticalAlignment="Center" FontSize="24" Foreground="Gray">(Aircraft title)</TextBlock>
+                                        </Grid>
+                                    </Expander.Header>
+                                    <Expander.Content>
+                                        <materialDesign:Card Grid.Row="1" Background="{DynamicResource MaterialDesignBackground}" Margin="1 1 0 0">
+                                            <Grid Margin="5">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Orientation="Vertical" Grid.Column="0" Margin="5">
+                                                    <TextBlock FontSize="12" Foreground="Gray">Callsign in aircraft.cfg:</TextBlock>
+                                                    <TextBlock Name="txtAtcId" FontSize="16">PH-BLA</TextBlock>
+                                                </StackPanel>
+                                                <StackPanel Orientation="Vertical" Grid.Column="1" Margin="5">
+                                                    <TextBlock FontSize="12" Foreground="Gray">Type:</TextBlock>
+                                                    <TextBlock Name="txtAtcType" FontSize="16">DEHAVILLAND</TextBlock>
+                                                    <TextBlock FontSize="12" Foreground="Gray">Model:</TextBlock>
+                                                    <TextBlock Name="txtAtcModel" FontSize="16">DHC6</TextBlock>
+                                                </StackPanel>
+                                                <StackPanel Orientation="Vertical" Grid.Column="2" Margin="5">
+                                                    <TextBlock FontSize="12" Foreground="Gray">Airline:</TextBlock>
+                                                    <TextBlock Name="txtAtcAirline" FontSize="16">-</TextBlock>
+                                                    <TextBlock FontSize="12" Foreground="Gray">Flight number:</TextBlock>
+                                                    <TextBlock Name="txtAtcFlightNumber" FontSize="16">-</TextBlock>
+                                                </StackPanel>
+                                            </Grid>
+                                        </materialDesign:Card>
+                                    </Expander.Content>
+                                </Expander>
+                            </materialDesign:Card>
+                        </StackPanel>
                     </ScrollViewer>
 
                     <materialDesign:Snackbar MessageQueue="{materialDesign:MessageQueue}" x:Name="MainSnackbar"
