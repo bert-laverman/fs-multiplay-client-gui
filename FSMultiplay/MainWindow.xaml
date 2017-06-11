@@ -6,7 +6,7 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:local="clr-namespace:FSMultiplay"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow" Height="512" Width="1024">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -25,14 +25,9 @@
                                     DockPanel.Dock="Top"
                                     HorizontalAlignment="Right" Margin="16"
                                     IsChecked="{Binding ElementName=MenuToggleButton, Path=IsChecked, Mode=TwoWay}" />
-                    <ListBox x:Name="DemoItemsListBox" Margin="0 16 0 16" SelectedIndex="0"                         
-                             ItemsSource="{Binding DemoItems}">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate DataType="domain:DemoItem">
-                                <TextBlock Text="{Binding Name}" Margin="32 0 32 0" />
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
+                    <StackPanel Orientation="Vertical">
+                        <Button Name="btn_ServerDetails" Content="Server settings" Click="btn_ServerDetails_Click" />
+                    </StackPanel>
                 </DockPanel>
             </materialDesign:DrawerHost.LeftDrawerContent>
             <DockPanel>
@@ -43,11 +38,10 @@
                                         x:Name="MenuToggleButton"/>
                         <materialDesign:PopupBox DockPanel.Dock="Right" PlacementMode="BottomAndAlignRightEdges" StaysOpen="False">
                             <StackPanel>
-                                <Button Content="Hello World" Click="menu_HelloWorld"/>
-                                <Button Content="Nice Popup" Click="menu_NicePopup"/>
-                                <Button Content="Can't Touch This" Click="menu_CantTouchThis"  />
+                                <Button Name="btn_MpConnect" Content="Multiplay connect" Click="menu_MultiplayConnect" IsEnabled="False"/>
+                                <Button Name="btn_MpDisconnect" Content="Multiplay disconnect" Click="menu_MultiplayDisconnect" IsEnabled="False"/>
                                 <Separator/>
-                                <Button Content="Goodbye" Click="menu_Goodbye"/>
+                                <Button Content="Quit" Click="menu_Quit"/>
                             </StackPanel>
                         </materialDesign:PopupBox>
                         <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="22">FSMultiplay</TextBlock>
@@ -58,10 +52,7 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <ScrollViewer Grid.Row="1" 
-                                  HorizontalScrollBarVisibility="{Binding ElementName=DemoItemsListBox, Path=SelectedItem.HorizontalScrollBarVisibilityRequirement}"
-                                  VerticalScrollBarVisibility="{Binding ElementName=DemoItemsListBox, Path=SelectedItem.VerticalScrollBarVisibilityRequirement}" 
-                                  Padding="{Binding ElementName=DemoItemsListBox, Path=SelectedItem.MarginRequirement}">
+                    <ScrollViewer Grid.Row="1">
                         <StackPanel Margin="5">
                             <materialDesign:Card Grid.Row="1" Background="{DynamicResource MaterialDesignBackground}" Margin="1 1 0 0">
                                 <Expander>
@@ -90,19 +81,19 @@
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel Orientation="Vertical" Grid.Column="0" Margin="5">
                                                     <TextBlock FontSize="12" Foreground="Gray">Simulator:</TextBlock>
-                                                    <TextBlock Name="txtSimName" FontSize="16">Simulator not Connected</TextBlock>
+                                                    <TextBlock Name="txtSimName" FontSize="16" Foreground="LightGray">(simulator)</TextBlock>
                                                 </StackPanel>
                                                 <StackPanel Orientation="Vertical" Grid.Column="1" Margin="5">
                                                     <TextBlock FontSize="12" Foreground="Gray">Version:</TextBlock>
-                                                    <TextBlock Name="txtSimVersion" FontSize="16">10.0.0</TextBlock>
+                                                    <TextBlock Name="txtSimVersion" FontSize="16" Foreground="LightGray">(version)</TextBlock>
                                                     <TextBlock FontSize="12" Foreground="Gray">SimConnect version:</TextBlock>
-                                                    <TextBlock Name="txtSimConVersion" FontSize="16">10.0.0</TextBlock>
+                                                    <TextBlock Name="txtSimConVersion" FontSize="16" Foreground="LightGray">(version)</TextBlock>
                                                 </StackPanel>
                                                 <StackPanel Orientation="Vertical" Grid.Column="2" Margin="5">
                                                     <TextBlock FontSize="12" Foreground="Gray">Build:</TextBlock>
-                                                    <TextBlock Name="txtSimBuild" FontSize="16">12345</TextBlock>
+                                                    <TextBlock Name="txtSimBuild" FontSize="16" Foreground="LightGray">(build)</TextBlock>
                                                     <TextBlock FontSize="12" Foreground="Gray">SimConnect build:</TextBlock>
-                                                    <TextBlock Name="txtSimConBuild" FontSize="16">12345</TextBlock>
+                                                    <TextBlock Name="txtSimConBuild" FontSize="16" Foreground="LightGray">(build)</TextBlock>
                                                 </StackPanel>
                                             </Grid>
                                         </materialDesign:Card>
@@ -117,8 +108,8 @@
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Name="txtCallsign" Grid.Column="0" VerticalAlignment="Center" FontSize="24" Foreground="Gray">(callsign)</TextBlock>
-                                            <TextBlock Name="txtTitle" Grid.Column="1" VerticalAlignment="Center" FontSize="24" Foreground="Gray">(Aircraft title)</TextBlock>
+                                            <TextBlock Name="txtCallsign" Grid.Column="0" VerticalAlignment="Center" FontSize="24" Foreground="LightGray">(callsign)</TextBlock>
+                                            <TextBlock Name="txtTitle" Grid.Column="1" VerticalAlignment="Center" FontSize="24" Foreground="LightGray">(Aircraft title)</TextBlock>
                                         </Grid>
                                     </Expander.Header>
                                     <Expander.Content>
@@ -130,20 +121,57 @@
                                                     <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel Orientation="Vertical" Grid.Column="0" Margin="5">
-                                                    <TextBlock FontSize="12" Foreground="Gray">Callsign in aircraft.cfg:</TextBlock>
-                                                    <TextBlock Name="txtAtcId" FontSize="16">PH-BLA</TextBlock>
+                                                    <TextBlock FontSize="12" Foreground="Gray">Callsign in</TextBlock>
+                                                    <TextBlock FontSize="12" Foreground="Gray" Margin="20 0 0 0">aircraft.cfg:</TextBlock>
+                                                    <TextBlock Name="txtAtcId" FontSize="16" Foreground="LightGray">(callsign)</TextBlock>
                                                 </StackPanel>
                                                 <StackPanel Orientation="Vertical" Grid.Column="1" Margin="5">
                                                     <TextBlock FontSize="12" Foreground="Gray">Type:</TextBlock>
-                                                    <TextBlock Name="txtAtcType" FontSize="16">DEHAVILLAND</TextBlock>
+                                                    <TextBlock Name="txtAtcType" FontSize="16" Foreground="LightGray">(type)</TextBlock>
                                                     <TextBlock FontSize="12" Foreground="Gray">Model:</TextBlock>
-                                                    <TextBlock Name="txtAtcModel" FontSize="16">DHC6</TextBlock>
+                                                    <TextBlock Name="txtAtcModel" FontSize="16" Foreground="LightGray">(model)</TextBlock>
                                                 </StackPanel>
                                                 <StackPanel Orientation="Vertical" Grid.Column="2" Margin="5">
                                                     <TextBlock FontSize="12" Foreground="Gray">Airline:</TextBlock>
-                                                    <TextBlock Name="txtAtcAirline" FontSize="16">-</TextBlock>
+                                                    <TextBlock Name="txtAtcAirline" FontSize="16" Foreground="LightGray">(airline)</TextBlock>
                                                     <TextBlock FontSize="12" Foreground="Gray">Flight number:</TextBlock>
-                                                    <TextBlock Name="txtAtcFlightNumber" FontSize="16">-</TextBlock>
+                                                    <TextBlock Name="txtAtcFlightNumber" FontSize="16" Foreground="LightGray">(flightnumber)</TextBlock>
+                                                </StackPanel>
+                                            </Grid>
+                                        </materialDesign:Card>
+                                    </Expander.Content>
+                                </Expander>
+                            </materialDesign:Card>
+                            <materialDesign:Card Grid.Row="1" Background="{DynamicResource MaterialDesignBackground}" Margin="1 1 0 0">
+                                <Expander>
+                                    <Expander.Header>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Name="txtServerStatus" Grid.Column="0" VerticalAlignment="Center" FontSize="24">Not logged in to server</TextBlock>
+                                            <TextBlock Name="txtLiveStatus" Grid.Column="1" VerticalAlignment="Center" FontSize="24">No live data</TextBlock>
+                                        </Grid>
+                                    </Expander.Header>
+                                    <Expander.Content>
+                                        <materialDesign:Card Grid.Row="1" Background="{DynamicResource MaterialDesignBackground}" Margin="1 1 0 0">
+                                            <Grid Margin="5">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Orientation="Vertical" Grid.Column="0" Margin="5">
+                                                    <TextBlock FontSize="12" Foreground="Gray">Username:</TextBlock>
+                                                    <TextBlock Name="txtUsername" FontSize="16">(username)</TextBlock>
+                                                    <TextBlock FontSize="12" Foreground="Gray">Callsign:</TextBlock>
+                                                    <TextBlock Name="txtMpCallsign" FontSize="16">(callsign)</TextBlock>
+                                                </StackPanel>
+                                                <StackPanel Orientation="Vertical" Grid.Column="1" Margin="5">
+                                                    <TextBlock FontSize="12" Foreground="Gray">Server URL:</TextBlock>
+                                                    <TextBlock Name="txtUrl" FontSize="16">https://fs.rakis.nl/api</TextBlock>
+                                                    <TextBlock FontSize="12" Foreground="Gray">Live data URL:</TextBlock>
+                                                    <TextBlock Name="txtWsUrl" FontSize="16">wss://fs.rakis.nl/live</TextBlock>
                                                 </StackPanel>
                                             </Grid>
                                         </materialDesign:Card>

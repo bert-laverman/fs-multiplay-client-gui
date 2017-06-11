@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Runtime.InteropServices;
+using MaterialDesignThemes.Wpf;
 
 namespace FSMultiplay
 {
@@ -24,39 +25,114 @@ namespace FSMultiplay
         [DllImport("MultiPlayDll.dll", EntryPoint = "srvmgr_start")]
         public static extern void srvmgr_start();
 
-        public delegate void CsSimConnectEventHandler(int iEvent);
-        private CsSimConnectEventHandler sceHandler;
-        [DllImport("MultiPlayDll.dll", EntryPoint = "scmgr_addSimconnectHandler")]
-        public static extern void scmgr_addSimconnectHandler(CsSimConnectEventHandler callback);
+        private FsxManager.CsSimConnectEventHandler sceHandler;
+        private MultiplayManager.CsMultiplayStatusHandler mpStHandler;
+        private MultiplayManager.CsMultiplayDataChangedHandler mpDataHandler;
 
-        [DllImport("MultiPlayDll.dll", EntryPoint = "mpmgr_getOverrideCallsign")]
-        public static extern bool mpmgr_getOverrideCallsign();
-        [DllImport("MultiPlayDll.dll", EntryPoint = "mpmgr_getCallsign")]
-        public static extern string mpmgr_getCallsign();
+        private void setSimulatorNone()
+        {
+            txtSimSummary.Text = "Simulator not running";
+            imgNoSim.Visibility = Visibility.Visible;
+            imgFsx.Visibility = Visibility.Collapsed;
+            imgFsxSe.Visibility = Visibility.Collapsed;
+            imgP3d.Visibility = Visibility.Collapsed;
+        }
+
+        private void setSimulatorFsx()
+        {
+            txtSimSummary.Text = "Connected to FSX";
+            imgNoSim.Visibility = Visibility.Collapsed;
+            imgFsx.Visibility = Visibility.Visible;
+            imgFsxSe.Visibility = Visibility.Collapsed;
+            imgP3d.Visibility = Visibility.Collapsed;
+        }
+
+        private void setSimulatorFsxSe()
+        {
+            txtSimSummary.Text = "Connected to FSX-SE";
+            imgNoSim.Visibility = Visibility.Collapsed;
+            imgFsx.Visibility = Visibility.Collapsed;
+            imgFsxSe.Visibility = Visibility.Visible;
+            imgP3d.Visibility = Visibility.Collapsed;
+        }
+
+        private void setSimulatorP3d()
+        {
+            txtSimSummary.Text = "Connected to Prepar3D";
+            imgNoSim.Visibility = Visibility.Collapsed;
+            imgFsx.Visibility = Visibility.Collapsed;
+            imgFsxSe.Visibility = Visibility.Collapsed;
+            imgP3d.Visibility = Visibility.Visible;
+        }
 
         private void setSimulator()
         {
+            if (FsxManager.isConnected())
+            {
+                string name = FsxManager.getSimName();
+                if (name.Equals("Microsoft Flight Simulator X"))
+                {
+                    int build = FsxManager.getSimBuildMajor();
+                    if ((build == 62608) || (build == 62613) || (build == 62615))
+                    {
+                        setSimulatorFsxSe();
+                    }
+                    else
+                    {
+                        setSimulatorFsx();
+                    }
+                }
+                else
+                {
+                    setSimulatorP3d();
+                }
 
+                txtSimName.Text = name;
+                txtSimName.Foreground = Brushes.Black;
+                txtSimVersion.Text = "" + FsxManager.getSimVersionMajor() + "." + FsxManager.getSimVersionMinor();
+                txtSimVersion.Foreground = Brushes.Black;
+                txtSimBuild.Text = "" + FsxManager.getSimBuildMajor() + "." + FsxManager.getSimBuildMinor();
+                txtSimBuild.Foreground = Brushes.Black;
+                txtSimConVersion.Text = "" + FsxManager.getLibVersionMajor() + "." + FsxManager.getLibVersionMinor();
+                txtSimConVersion.Foreground = Brushes.Black;
+                txtSimConBuild.Text = "" + FsxManager.getLibBuildMajor() + "." + FsxManager.getLibBuildMinor();
+                txtSimConBuild.Foreground = Brushes.Black;
+            }
+            else
+            {
+                setSimulatorNone();
+
+                txtSimName.Text = "(simulator)";
+                txtSimName.Foreground = Brushes.LightGray;
+                txtSimVersion.Text = "(version)";
+                txtSimVersion.Foreground = Brushes.LightGray;
+                txtSimBuild.Text = "(build)";
+                txtSimBuild.Foreground = Brushes.LightGray;
+                txtSimConVersion.Text = "(version)";
+                txtSimConVersion.Foreground = Brushes.LightGray;
+                txtSimConBuild.Text = "(build)";
+                txtSimConBuild.Foreground = Brushes.LightGray;
+            }
         }
 
-        private void setAircraft(bool isConnected)
+        private void setAircraft()
         {
-            if (isConnected)
+            if (FsxManager.isConnected())
             {
-                txtCallsign.Text = /*mpmgr_getOverrideCallsign() ? mpmgr_getCallsign() : */ "PH-BLA";
+                txtCallsign.Text = MultiplayManager.isOverrideCallsign() ? MultiplayManager.getCallsign() : FsxManager.getAtcId();
                 txtCallsign.Foreground = Brushes.Black;
-                txtTitle.Text = "HS Twin_vista_CARIB";
+                txtTitle.Text = FsxManager.getTitle();
                 txtTitle.Foreground = Brushes.Black;
 
-                txtAtcId.Text = "PH-BLA";
+                txtAtcId.Text = FsxManager.getAtcId();
                 txtAtcId.Foreground = Brushes.Black;
-                txtAtcType.Text = "DEHAVILLAND";
+                txtAtcType.Text = FsxManager.getAtcType();
                 txtAtcType.Foreground = Brushes.Black;
-                txtAtcModel.Text = "DHC6";
+                txtAtcModel.Text = FsxManager.getAtcModel();
                 txtAtcModel.Foreground = Brushes.Black;
-                txtAtcAirline.Text = "-";
+                txtAtcAirline.Text = FsxManager.getAtcAirline();
                 txtAtcAirline.Foreground = Brushes.Black;
-                txtAtcFlightNumber.Text = "-";
+                txtAtcFlightNumber.Text = FsxManager.getAtcFlightnumber();
                 txtAtcFlightNumber.Foreground = Brushes.Black;
             }
             else
@@ -79,30 +155,36 @@ namespace FSMultiplay
             }
         }
 
+        private void setMultiplay()
+        {
+            txtUsername.Text = MultiplayManager.getUsername();
+            txtMpCallsign.Text = MultiplayManager.getCallsign();
+            txtUrl.Text = MultiplayManager.getServerUrl();
+            txtWsUrl.Text = MultiplayManager.getWsServerUrl();
+        }
+
         private void mainSceHandler(int iEvent)
         {
             string msg = "Something happened";
             switch (iEvent) {
                 case 0: // SCE_CONNECT
-                    txtSimSummary.Text = "Connected to FSX";
-                    imgNoSim.Visibility = Visibility.Collapsed;
-                    imgFsx.Visibility = Visibility.Visible;
-                    imgFsxSe.Visibility = Visibility.Collapsed;
-                    imgP3d.Visibility = Visibility.Collapsed;
                     msg = "Connected to simulator";
 
-                    setAircraft(true);
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        setSimulator();
+                        setAircraft();
+                    });
                     break;
 
                 case 1: // SCE_DISCONNECT
-                    txtSimSummary.Text = "Simulator not running";
-                    imgNoSim.Visibility = Visibility.Visible;
-                    imgFsx.Visibility = Visibility.Collapsed;
-                    imgFsxSe.Visibility = Visibility.Collapsed;
-                    imgP3d.Visibility = Visibility.Collapsed;
                     msg = "Disconnected from simulator";
 
-                    setAircraft(false);
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        setSimulator();
+                        setAircraft();
+                    });
                     break;
 
                 case 2: // SCE_START
@@ -119,6 +201,11 @@ namespace FSMultiplay
                     break;
                 case 6: // SCE_AIRCRAFTLOADED
                     msg = "Loaded aircraft model";
+
+                    this.Dispatcher.Invoke(() =>
+                    {
+                        setAircraft();
+                    });
                     break;
 //                case 7: // SCE_OBJECTADDED
 //                    msg = "AI object added";
@@ -135,60 +222,115 @@ namespace FSMultiplay
             });
         }
 
+        private void mainMpStatusHandler(int iEvent)
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                switch (iEvent)
+                {
+                    case 1: // MPSTAT_DISCONNECTED
+                        txtServerStatus.Text = "Not logged in to server.";
+                        txtLiveStatus.Text = "No live data.";
+                        btn_MpConnect.IsEnabled = true;
+                        btn_MpDisconnect.IsEnabled = false;
+                        break;
+                    case 2: // MPSTAT_CONNECTING
+                        txtServerStatus.Text = "Connecting to server.";
+                        txtLiveStatus.Text = "No live data.";
+                        btn_MpConnect.IsEnabled = false;
+                        btn_MpDisconnect.IsEnabled = true;
+                        break;
+                    case 3: // MPSTAT_WS_CONNECTING
+                        txtServerStatus.Text = "Connected to server.";
+                        txtLiveStatus.Text = "Connecting to live data.";
+                        btn_MpConnect.IsEnabled = false;
+                        btn_MpDisconnect.IsEnabled = true;
+                        break;
+                    case 4: // MPSTAT_CONNECTED
+                        txtServerStatus.Text = "Connected to server.";
+                        txtLiveStatus.Text = "Connected to live data.";
+                        btn_MpConnect.IsEnabled = false;
+                        btn_MpDisconnect.IsEnabled = true;
+                        break;
+                    case 5: // MPSTAT_CLOSING
+                        txtServerStatus.Text = "Closing server connectiuon.";
+                        txtLiveStatus.Text = "Closing live data.";
+                        btn_MpConnect.IsEnabled = false;
+                        btn_MpDisconnect.IsEnabled = true;
+                        break;
+                    case 6: // MPSTAT_SYNC
+                        txtServerStatus.Text = "Updating session data.";
+                        txtLiveStatus.Text = "No live data.";
+                        btn_MpConnect.IsEnabled = false;
+                        btn_MpDisconnect.IsEnabled = true;
+                        break;
+                    case 7: // MPSTAT_ERROR
+                        txtServerStatus.Text = "Got error from server.";
+                        txtLiveStatus.Text = "No live data.";
+                        btn_MpConnect.IsEnabled = false;
+                        btn_MpDisconnect.IsEnabled = true;
+                        break;
+                    default:
+                        break;
+                }
+            });
+        }
+
+        private void mainMpDataChangedHandler()
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                setMultiplay();
+            });
+        }
+
+        public void settingsChanged()
+        {
+            setSimulator();
+            setAircraft();
+            setMultiplay();
+        }
+
         public MainWindow()
         {
             InitializeComponent();
 
-            sceHandler = new CsSimConnectEventHandler(mainSceHandler);
-            scmgr_addSimconnectHandler(sceHandler);
+            sceHandler = new FsxManager.CsSimConnectEventHandler(mainSceHandler);
+            FsxManager.addSimconnectHandler(sceHandler);
+            mpStHandler = new MultiplayManager.CsMultiplayStatusHandler(mainMpStatusHandler);
+            MultiplayManager.addStatusHandler(mpStHandler);
+            mpDataHandler = new MultiplayManager.CsMultiplayDataChangedHandler(mainMpDataChangedHandler);
+            MultiplayManager.addDataChangedHandler(mainMpDataChangedHandler);
 
             srvmgr_start();
 
-            setAircraft(false);
+            setSimulator();
+            setAircraft();
+            setMultiplay();
         }
 
-        private void menu_HelloWorld(object sender, RoutedEventArgs e)
+        private void menu_MultiplayConnect(object sender, RoutedEventArgs e)
         {
-            txtSimSummary.Text = "Simulator not running";
-            imgNoSim.Visibility = Visibility.Visible;
-            imgFsx.Visibility = Visibility.Collapsed;
-            imgFsxSe.Visibility = Visibility.Collapsed;
-            imgP3d.Visibility = Visibility.Collapsed;
-
-            setAircraft(false);
+            MultiplayManager.connect();
         }
 
-        private void menu_NicePopup(object sender, RoutedEventArgs e)
+        private void menu_MultiplayDisconnect(object sender, RoutedEventArgs e)
         {
-            txtSimSummary.Text = "Connected to FSX";
-            imgNoSim.Visibility = Visibility.Collapsed;
-            imgFsx.Visibility = Visibility.Visible;
-            imgFsxSe.Visibility = Visibility.Collapsed;
-            imgP3d.Visibility = Visibility.Collapsed;
-
-            setAircraft(true);
+            MultiplayManager.disconnect();
         }
 
-        private void menu_CantTouchThis(object sender, RoutedEventArgs e)
+        private void menu_Quit(object sender, RoutedEventArgs e)
         {
-            txtSimSummary.Text = "Connected to FSX-SE";
-            imgNoSim.Visibility = Visibility.Collapsed;
-            imgFsx.Visibility = Visibility.Collapsed;
-            imgFsxSe.Visibility = Visibility.Visible;
-            imgP3d.Visibility = Visibility.Collapsed;
-
-            setAircraft(true);
+            Application.Current.Shutdown();
         }
 
-        private void menu_Goodbye(object sender, RoutedEventArgs e)
+        private async void btn_ServerDetails_Click(object sender, RoutedEventArgs e)
         {
-            txtSimSummary.Text = "Connected to Prepar3D";
-            imgNoSim.Visibility = Visibility.Collapsed;
-            imgFsx.Visibility = Visibility.Collapsed;
-            imgFsxSe.Visibility = Visibility.Collapsed;
-            imgP3d.Visibility = Visibility.Visible;
+            MenuToggleButton.IsChecked = false;
 
-            setAircraft(true);
+            var serverDetailsDialog = new ServerDetailsDialog();
+
+            await DialogHost.Show(serverDetailsDialog, "RootDialog");
         }
     }
 }
